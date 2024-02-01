@@ -1,39 +1,57 @@
-// /frontend/src/components/OverlayForm.js
 import React, { useState } from 'react';
 import axios from 'axios';
 
 function OverlayForm() {
-  // State for form inputs
   const [position, setPosition] = useState('');
   const [size, setSize] = useState('');
   const [content, setContent] = useState('');
+  const [logo, setLogo] = useState(null);
+  const [isLoading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Function to handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Create an overlay object with form data
-    const overlayData = {
-      position,
-      size,
-      content,
-    };
+    // Check if all required fields are filled
+    if (!position || !size || !content || !logo) {
+      setError('Please fill in all required fields.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('position', position);
+    formData.append('size', size);
+    formData.append('content', content);
+    formData.append('logo', logo);
 
     try {
-      // Send a POST request to the backend to create the overlay
-      const response = await axios.post('http://127.0.0.1:5000/api/overlays', overlayData);
+      setLoading(true);
 
-      // Handle the response or update the UI as needed
+      const response = await axios.post('http://127.0.0.1:5000/api/overlays', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
       console.log('Overlay created successfully:', response.data);
       
-      // You may want to reset the form after successful submission
+      // Reset the form after successful submission
       setPosition('');
       setSize('');
       setContent('');
+      setLogo(null);
+      setError(null);
     } catch (error) {
-      // Handle errors, e.g., display an error message to the user
+      // Handle errors
+      setError('Error creating overlay. Please try again.');
       console.error('Error creating overlay:', error.message);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleLogoChange = (e) => {
+    setLogo(e.target.files[0]);
   };
 
   return (
@@ -42,21 +60,30 @@ function OverlayForm() {
       <form onSubmit={handleSubmit}>
         <label>
           Position:
-          <input type="text" value={position} onChange={(e) => setPosition(e.target.value)} />
+          <input type="text" value={position} onChange={(e) => setPosition(e.target.value)} required />
         </label>
         <br />
         <label>
           Size:
-          <input type="text" value={size} onChange={(e) => setSize(e.target.value)} />
+          <input type="text" value={size} onChange={(e) => setSize(e.target.value)} required />
         </label>
         <br />
         <label>
           Content:
-          <input type="text" value={content} onChange={(e) => setContent(e.target.value)} />
+          <input type="text" value={content} onChange={(e) => setContent(e.target.value)} required />
         </label>
         <br />
-        <button type="submit">Create Overlay</button>
+        <label>
+          Logo:
+          <input type="file" accept="image/*" onChange={handleLogoChange} required />
+        </label>
+        <br />
+        <button type="submit" disabled={isLoading}>
+          {isLoading ? 'Creating Overlay...' : 'Create Overlay'}
+        </button>
       </form>
+
+      {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
   );
 }

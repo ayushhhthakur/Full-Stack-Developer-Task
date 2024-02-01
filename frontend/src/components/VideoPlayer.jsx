@@ -4,7 +4,7 @@ import ReactPlayer from 'react-player';
 function VideoPlayer() {
   const [playing, setPlaying] = useState(false);
   const [volume, setVolume] = useState(1.0);
-  const [rtspUrl, setRtspUrl] = useState('your_rtsp_stream_url_here');
+  const [rtspUrl, setRtspUrl] = useState('');
 
   // Ref to the ReactPlayer component
   const playerRef = useRef(null);
@@ -26,9 +26,11 @@ function VideoPlayer() {
       <label>
           RTSP URL:
           <input
+          placeholder='Enter URL'
             type="text"
             value={rtspUrl}
             onChange={handleRtspUrlChange}
+            required={true}
           />
         </label>
         <button onClick={handlePlayPause}>{playing ? 'Pause' : 'Play'}</button>
